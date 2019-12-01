@@ -11,6 +11,11 @@ import (
 	client "go.etcd.io/etcd/clientv3"
 )
 
+var (
+	ConfChan  = make(chan string, 10)
+	waitGroup sync.WaitGroup
+)
+
 type EtcdService interface {
 	PutKV(key string, value string)
 	Get(key string) (*client.GetResponse)
@@ -28,6 +33,7 @@ func NewEtcdService(addrs []string, timeout time.Duration) *etcdService {
 		DialTimeout: timeout,
 	})
 	kv := client.NewKV(etcdClient)
+
 	e := &etcdService{
 		EtcdClient: etcdClient,
 		EtcdKV:     kv,
@@ -49,11 +55,6 @@ func (e *etcdService) PutKV(key string, value string) {
 	fmt.Printf("kvs1: %v", putResp.PrevKv)
 }
 
-var (
-	ConfChan  = make(chan string, 10)
-	cli       *client.Client
-	waitGroup sync.WaitGroup
-)
 
 func (e *etcdService) Get(key string) (*client.GetResponse) {
 
@@ -63,7 +64,7 @@ func (e *etcdService) Get(key string) (*client.GetResponse) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("kvs2:  %v", getResp.Kvs)
+	//fmt.Printf("kvs2:  %v", getResp.Kvs)
 	cancel()
 	return getResp
 }

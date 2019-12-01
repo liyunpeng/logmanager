@@ -131,7 +131,7 @@ func (t *TailMgr) reloadConfig(logConfArr []conf.LogConfig) (err error) {
 func (t *TailMgr) Process() {
 	for etcdConfValue := range ConfChan {
 		logs.Debug("log etcdConfValue: %v", etcdConfValue)
-		fmt.Printf("log etcdConfValue: %v", etcdConfValue)
+		//fmt.Printf("log etcdConfValue: %v", etcdConfValue)
 
 		var logConfArr []conf.LogConfig
 

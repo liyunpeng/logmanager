@@ -27,7 +27,7 @@ func  (e *EtcdManangerController)GetAdd(){
 	[
 		{
 			"topic":"nginx_log",
-			"log_path":"/d/log1",
+			"log_path":"D:\log1",
 			"service":"test_service",
 			"send_rate":1000
 		},
