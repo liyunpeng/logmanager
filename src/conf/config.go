@@ -1,4 +1,4 @@
-package datasource
+package conf
 
 import (
 	"encoding/json"
@@ -76,5 +76,23 @@ func getLevel(level string) int {
 		return logs.LevelDebug
 	}
 }
+
+func (e *AppConfig) GetEtcdKeys() ([]string) {
+	var etcdKeys []string
+	ips, err := getLocalIP()
+	if err != nil {
+		fmt.Println("get local ip error:", err)
+		//return err
+	}
+	for _, ip := range ips {
+		key := fmt.Sprintf(AppConf.EtcdWatchKey, ip)
+		etcdKeys = append(etcdKeys, key)
+	}
+	fmt.Println("etcdkeys:", etcdKeys)
+	return etcdKeys
+}
+
+
+
 
 

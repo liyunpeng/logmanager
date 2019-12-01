@@ -4,15 +4,16 @@ import (
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/mvc"
 	"../services"
-	"../datasource"
+	"../conf"
 	"./controllers"
 	"fmt"
+	"time"
 )
 
 func initConf(){
 	confFile := "./conf/app.cfg"
 	fmt.Println("main")
-	err := datasource.AppConf.InitConfig(confFile)
+	err := conf.AppConf.InitConfig(confFile)
 	if err != nil {
 		fmt.Printf("init conf failed:%v", err)
 		return
@@ -20,7 +21,7 @@ func initConf(){
 	fmt.Println("init conf success")
 
 
-	err = datasource.AppConf.InitLogs()
+	err = conf.AppConf.InitLogs()
 
 	if err != nil {
 		fmt.Printf("init log failed:%v", err)
@@ -34,15 +35,24 @@ func WebMain() {
 
 	app.Logger().SetLevel("debug")
 
+	app.RegisterView(iris.HTML("./src/web/views/", ".html"))
+
+
 	initConf()
 
-	users := mvc.New(app.Party("/users"))
+	etcdService := services.NewEtcdService(
+		[]string{"127.0.0.1"}, 5 * time.Second)
+	etcdKeys := conf.AppConf.GetEtcdKeys()
+	etcdService.EtcdWatch(etcdKeys)
 
-	// Bind the "userService" to the UserController's Service (interface) field.
+	tailService := services.NewTailService()
+	tailService.RunServer()
 
-	etcdService := services.NewEtcdService([]string{}, 10)
+	services.NewKafkaService(
+		conf.AppConf.KafkaAddr, conf.AppConf.ThreadNum)
 
-	users.Register(etcdService)
 
-	users.Handle(new(controllers.ConfManangerController))
+	etcdManagerApp := mvc.New(app.Party("/etcdmanager"))
+	etcdManagerApp.Register(etcdService)
+	etcdManagerApp.Handle(new(controllers.EtcdManangerController))
 }

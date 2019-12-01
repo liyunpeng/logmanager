@@ -1,4 +1,4 @@
-package datasource
+package conf
 
 import (
 	"sync/atomic"
@@ -6,11 +6,11 @@ import (
 
 	"github.com/astaxie/beego/logs"
 )
-// SecondLimit to limit num in one second
+// SecondLimit to Limit num in one second
 type SecondLimit struct {
 	unixSecond int64
 	curCount   int32
-	limit      int32
+	Limit      int32
 }
 
 // NewSecondLimit to init a SecondLimit obj
@@ -18,7 +18,7 @@ func NewSecondLimit(limit int32) *SecondLimit {
 	secLimit := &SecondLimit{
 		unixSecond: time.Now().Unix(),
 		curCount:   0,
-		limit:      limit,
+		Limit:      limit,
 	}
 
 	return secLimit
@@ -36,13 +36,13 @@ func (s *SecondLimit) Add(count int) {
 	atomic.StoreInt32(&s.curCount, int32(count))
 }
 
-// Wait to limit num
+// Wait to Limit num
 func (s *SecondLimit) Wait() bool {
 	for {
 		sec := time.Now().Unix()
-		if (sec == atomic.LoadInt64(&s.unixSecond)) && s.curCount >= s.limit {
+		if (sec == atomic.LoadInt64(&s.unixSecond)) && s.curCount >= s.Limit {
 			time.Sleep(time.Millisecond)
-			logs.Debug("limit is runing, limit: %d s.curCount:%d", s.limit, s.curCount)
+			logs.Debug("Limit is runing, Limit: %d s.curCount:%d", s.Limit, s.curCount)
 			continue
 		}
 
@@ -50,7 +50,7 @@ func (s *SecondLimit) Wait() bool {
 			atomic.StoreInt64(&s.unixSecond, sec)
 			atomic.StoreInt32(&s.curCount, 0)
 		}
-		logs.Debug("limit is exited")
+		logs.Debug("Limit is exited")
 		return false
 	}
 }

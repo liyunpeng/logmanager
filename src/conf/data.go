@@ -1,4 +1,4 @@
-package datasource
+package conf
 
 // LogConfig is struct from etcd log conf
 type LogConfig struct {

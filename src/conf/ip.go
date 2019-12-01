@@ -1,13 +1,6 @@
-package services
+package conf
 
 import "fmt"
-type AppConfService interface {
-	GetEtcdKeys() ([]string)
-}
-
-type appConfService struct {
-}
-
 // var a slice for ip addr
 var ipArray []string
 
@@ -39,20 +32,3 @@ func getLocalIP() (ips []string, err error) {
 	fmt.Println("111111111111111 ips :", ips)
 	return
 }
-
-func (e *etcdService) GetEtcdKeys() ([]string) {
-	var etcdKeys []string
-	ips, err := getLocalIP()
-	if err != nil {
-		fmt.Println("get local ip error:", err)
-		return
-	}
-	for _, ip := range ips {
-		key := fmt.Sprintf(keyFormat, ip)
-		etcdKeys = append(etcdKeys, key)
-	}
-	fmt.Println("etcdkeys:", etcdKeys)
-	return etcdKeys
-}
-
-
