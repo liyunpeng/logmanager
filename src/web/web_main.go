@@ -48,6 +48,9 @@ func WebMain() {
 	*/
 	app.Logger().SetLevel("debug")
 
+	/*
+		不管当前代码路径在什么地方， iris.HTML必须基于项目的根目录， 所以是./src/web/views/
+	 */
 	app.RegisterView(iris.HTML("./src/web/views/", ".html"))
 
 	initConf()
@@ -73,11 +76,9 @@ func WebMain() {
 	services.NewKafkaService(
 		conf.AppConf.KafkaAddr, conf.AppConf.ThreadNum)
 
-
 	etcdManagerApp := mvc.New(app.Party("/etcdmanager"))
 	etcdManagerApp.Register(etcdService)
 	etcdManagerApp.Handle(new(controllers.EtcdManangerController))
-
 
 	fmt.Println("app.run")
 	app.Run(

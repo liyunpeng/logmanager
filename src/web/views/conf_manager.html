@@ -10,12 +10,25 @@
 <div class="container">
     <div class="row">
         <div class="col-md-6">
-            <button id="etcdputButton" class="btn btn-lg" type="button" >etcdput</button>
+            <button id="etcdPutButton" class="btn btn-lg" type="button" >etcdput</button>
         </div>
         <div class="col-md-6">
             <button id="clearbtn" class="btn btn-lg" type="button" >...</button>
         </div>
+
     </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <textarea id="intext" rows="10" cols="50">
+            </textarea>
+        </div>
+        <div class="col-md-6">
+            <textarea id="outtxt" rows="10" cols="50">
+            </textarea>
+        </div>
+    </div>
+
 </div>
 <script type="text/javascript">
     window.onload = main;
@@ -27,22 +40,24 @@
     // txtclean1.value = " ";
 
     function main() {
-        var oBtn = document.getElementById('contextButton');
+        var oBtn = document.getElementById('etcdPutButton');
         oBtn.onclick = OnTransferButton;
     }
 
     function OnTransferButton() {
         var xhr = new XMLHttpRequest();
-        var inputText = document.getElementById('intext').value;
+        // var inputText = document.getElementById('intext').value;
 
-        xhr.open('get', "/confmanager/add");
+        xhr.open('get', "/etcdmanager/add");
+        // xhr.setRequestHeader( "Content-Type" , "application/x-www-form-urlencoded" );
+
         xhr.send();
 
         xhr.onreadystatechange = function () {
             if (xhr.readyState == 4) {
                 if (xhr.status == 200) {
-                    var oTxt = document.getElementById('outtxt');
-                    oTxt.value = xhr.responseText;
+                    // var oTxt = document.getElementById('outtxt');
+                    // oTxt.value = xhr.responseText;
                 }
             }
         }
