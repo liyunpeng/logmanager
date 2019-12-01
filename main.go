@@ -1,9 +1,9 @@
 package main
 
 import (
-"fmt"
-"github.com/astaxie/beego/logs"
-"time"
+	"fmt"
+	"github.com/astaxie/beego/logs"
+	"time"
 )
 
 func main() {

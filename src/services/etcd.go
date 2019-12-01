@@ -1,4 +1,4 @@
-package main
+package services
 
 import (
 	"context"
@@ -11,11 +11,16 @@ import (
 	client "go.etcd.io/etcd/clientv3"
 )
 
+
+
+
 var (
 	confChan  = make(chan string, 10)
 	cli       *client.Client
 	waitGroup sync.WaitGroup
 )
+
+
 
 func initEtcd(addr []string, keyFormat string, timeout time.Duration) (err error) {
 	// init a global var cli and can not close
