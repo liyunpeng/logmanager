@@ -44,15 +44,17 @@ func NewEtcdService(addrs []string, timeout time.Duration) *etcdService {
 
 func (e *etcdService) PutKV(key string, value string) {
 
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 
-	putResp, err := e.EtcdKV.Put(ctx, key, value) //withPrevKV()是为了获取操作前已经有的key-value
+	_, err := e.EtcdKV.Put(ctx, key, value) //withPrevKV()是为了获取操作前已经有的key-value
 
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("kvs1: %v", putResp.PrevKv)
+	cancel()
+
+	//fmt.Printf("kvs1: %v", putResp.PrevKv)
 }
 
 

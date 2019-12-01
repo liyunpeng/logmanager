@@ -45,8 +45,12 @@ func WebMain() {
 	[DBUG] 2019/12/01 16:42 Host: register startup notifier
 	[DBUG] 2019/12/01 16:42 Host: register server shutdown on interrupt(CTRL+C/CMD+C)
 	[DBUG] 2019/12/01 16:42 Host: server will ignore the following errors: [http: Server closed]
+
+	log的级别从低到高以为	:DEBUG、INFO、WARN、ERROR、FATAL
+	只有高于锁设置的级别的以上的log才能打印，
+	比如级别设置为info, 那么debug的级别是不打印的
 	*/
-	app.Logger().SetLevel("debug")
+	app.Logger().SetLevel("info")
 
 	/*
 		不管当前代码路径在什么地方， iris.HTML必须基于项目的根目录， 所以是./src/web/views/
@@ -80,7 +84,8 @@ func WebMain() {
 	etcdManagerApp.Register(etcdService)
 	etcdManagerApp.Handle(new(controllers.EtcdManangerController))
 
-	fmt.Println("app.run")
+	app.Logger().Debug("app.run")
+	app.Logger().Info("info111111111 ")
 	app.Run(
 		iris.Addr("localhost:9080"),
 		iris.WithoutServerError(iris.ErrServerClosed),
