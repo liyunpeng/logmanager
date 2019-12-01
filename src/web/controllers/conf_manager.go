@@ -8,11 +8,7 @@ import (
 type ConfManangerController struct {
 	Ctx iris.Context
 
-	// Our UserService, it's an interface which
-	// is binded from the main application.
 	Service services.EtcdService
-
-
 }
 
 
@@ -37,7 +33,4 @@ func  (c *ConfManangerController)f(){
 	]`
 
 	c.Service.PutKV(etcdKey, etcdValue)
-
-
-
 }

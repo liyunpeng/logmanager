@@ -7,21 +7,7 @@ import (
 )
 
 func main() {
-	confFile := "./conf/app.cfg"
-	fmt.Println("main")
-	err := initConfig(confFile)
-	if err != nil {
-		fmt.Printf("init conf failed:%v", err)
-		return
-	}
-	fmt.Println("init conf success")
 
-	err = initLogs(appConf.LogFile, appConf.LogLevel)
-	if err != nil {
-		fmt.Printf("init log failed:%v", err)
-		return
-	}
-	fmt.Println("init logs success")
 
 	timeout := time.Duration(appConf.EtcdTimeOut) * time.Second
 	var etcdAddrSlice []string

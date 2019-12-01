@@ -14,6 +14,7 @@ import (
 
 type EtcdService interface {
 	PutKV(key string, value string)
+	Get(key string)
 }
 
 type etcdService struct {
@@ -59,6 +60,23 @@ var (
 	waitGroup sync.WaitGroup
 )
 
+func (e *etcdService) Get(key string){
+
+	ctx, _ := context.WithTimeout(context.Background(), 5 *time.Second)
+
+	//putResp,err := kv.Put(ctx,"/job/v3","push the box")  //withPrevKV()是为了获取操作前已经有的key-value
+	//if err != nil{
+	//	panic(err)
+	//}
+	//fmt.Printf("kvs1: %v",putResp.PrevKv)
+
+	getResp,err := e.EtcdKV.Get(ctx,"/job/v3") //withPrefix()是未了获取该key为前缀的所有key-value
+	if err != nil{
+		panic(err)
+	}
+	fmt.Printf("kvs2:  %v",getResp.Kvs)
+}
+
 
 
 func initEtcd(addr []string, keyFormat string, timeout time.Duration) (err error) {
@@ -94,19 +112,6 @@ func initEtcd(addr []string, keyFormat string, timeout time.Duration) (err error
 
 	//kapi := cli.NewKeysAPI(c)
 
-	ctx, _ := context.WithTimeout(context.Background(), 5 *time.Second)
-
-	//putResp,err := kv.Put(ctx,"/job/v3","push the box")  //withPrevKV()是为了获取操作前已经有的key-value
-	//if err != nil{
-	//	panic(err)
-	//}
-	//fmt.Printf("kvs1: %v",putResp.PrevKv)
-
-	getResp,err := kv.Get(ctx,"/job/v3") //withPrefix()是未了获取该key为前缀的所有key-value
-	if err != nil{
-		panic(err)
-	}
-	fmt.Printf("kvs2:  %v",getResp.Kvs)
 
 	/*
 		{
