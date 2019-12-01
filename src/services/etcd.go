@@ -12,6 +12,45 @@ import (
 )
 
 
+type EtcdService interface {
+	PutKV(key string, value string)
+}
+
+type etcdService struct {
+	EtcdClient  *client.Client
+
+	EtcdKV client.KV
+}
+
+
+func NewEtcdService(addr []string, timeout time.Duration) UserService {
+	etcdClient, _ := client.New(client.Config{
+		Endpoints:   addr,
+		DialTimeout: timeout,
+	})
+
+	kv := client.NewKV(etcdClient)
+
+	return &etcdService{
+		EtcdClient: etcdClient,
+		EtcdKV: kv,
+	}
+}
+
+func (e *etcdService) PutKV(key string, value string){
+
+
+	ctx, _ := context.WithTimeout(context.Background(), 5 *time.Second)
+
+	putResp,err := e.EtcdKV.Put(ctx, key, value)  //withPrevKV()是为了获取操作前已经有的key-value
+
+
+	if err != nil{
+		panic(err)
+	}
+
+	fmt.Printf("kvs1: %v",putResp.PrevKv)
+}
 
 
 var (
@@ -86,29 +125,7 @@ func initEtcd(addr []string, keyFormat string, timeout time.Duration) (err error
 
 	 */
 
-	s := `
-	[
-		{
-			"topic":"nginx_log",
-			"log_path":"/d/log1",
-			"service":"test_service",
-			"send_rate":1000
-		},
-			
-		{
-			"topic":"nginx_log",
-			"log_path":"/d/log1",
-			"service":"test_service",
-			"send_rate":1000
-		}
-	]`
 
-	s1 := "/logagent/192.168.0.142/logconfig"
-	putResp,err := kv.Put(ctx, s1, s)  //withPrevKV()是为了获取操作前已经有的key-value
-	if err != nil{
-		panic(err)
-	}
-	fmt.Printf("kvs1: %v",putResp.PrevKv)
 
 	//getResp1 ,err := kv.Get(ctx,s1) //withPrefix()是未了获取该key为前缀的所有key-value
 	//if err != nil{

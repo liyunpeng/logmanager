@@ -14,3 +14,30 @@ type ConfManangerController struct {
 
 
 }
+
+
+func  (c *ConfManangerController)f(){
+	etcdKey := "/logagent/192.168.0.142/logconfig"
+
+	etcdValue := `
+	[
+		{
+			"topic":"nginx_log",
+			"log_path":"/d/log1",
+			"service":"test_service",
+			"send_rate":1000
+		},
+			
+		{
+			"topic":"nginx_log",
+			"log_path":"/d/log1",
+			"service":"test_service",
+			"send_rate":1000
+		}
+	]`
+
+	c.Service.PutKV(etcdKey, etcdValue)
+
+
+
+}

@@ -3,6 +3,7 @@ package web
 import (
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/mvc"
+	"../services"
 )
 
 func WebMain() {
@@ -13,9 +14,10 @@ func WebMain() {
 	users := mvc.New(app.Party("/users"))
 
 	// Bind the "userService" to the UserController's Service (interface) field.
-	//users.Register(userService)
+
+	etcdService := services.NewEtcdService([]string{}, 10)
+
+	users.Register(etcdService)
 
 	users.Handle(new(controllers.ConfManangerController))
-
-
 }
