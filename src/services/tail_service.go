@@ -8,7 +8,7 @@ import (
 
 	"github.com/astaxie/beego/logs"
 	"github.com/hpcloud/tail"
-	"../conf"
+	"src/conf"
 )
 
 type TailService interface {

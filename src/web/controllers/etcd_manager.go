@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"../../services"
+	"src/services"
 	"fmt"
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/mvc"

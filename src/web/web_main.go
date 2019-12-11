@@ -3,9 +3,9 @@ package web
 import (
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/mvc"
-	"../services"
-	"../conf"
-	"./controllers"
+	"src/services"
+	"src/conf"
+	"src/web/controllers"
 	"fmt"
 	"time"
 )

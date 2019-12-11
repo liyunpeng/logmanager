@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"../../conf"
-	"../../services"
+	"src/conf"
+	"src/services"
 	"fmt"
 	"github.com/kataras/iris"
 )
