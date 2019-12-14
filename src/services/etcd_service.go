@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/astaxie/beego/logs"
-	//client "github.com/coreos/etcd/clientv3"
+	//"github.com/astaxie/beego/logs"
+	//producerClient "github.com/coreos/etcd/clientv3"
 	client "go.etcd.io/etcd/clientv3"
 )
 
@@ -78,8 +78,7 @@ func (e *etcdService) EtcdWatch(keys []string) {
 	var watchChans []client.WatchChan
 	for _, key := range keys {
 		rch := e.EtcdClient.Watch(context.Background(), key)
-		fmt.Println("rch:", rch)
-
+		fmt.Println("添加要watch的key，key的值=", key)
 		watchChans = append(watchChans, rch)
 	}
 
@@ -89,7 +88,7 @@ func (e *etcdService) EtcdWatch(keys []string) {
 			case wresp := <-watchC:
 				for _, ev := range wresp.Events {
 					ConfChan <- string(ev.Kv.Value)
-					logs.Debug("etcd key = %s , etcd value = %s", ev.Kv.Key, ev.Kv.Value)
+					fmt.Printf("etcd服务watch到新的键值对： etcd key = %s , etcd value = %s \n", ev.Kv.Key, ev.Kv.Value)
 				}
 			default:
 			}

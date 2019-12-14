@@ -15,11 +15,9 @@ func initConf(){
 	fmt.Println("main")
 	err := conf.AppConf.InitConfig(confFile)
 	if err != nil {
-		fmt.Printf("init conf failed:%v", err)
+		fmt.Printf("从本地配置文件加载配置失败:%v", err)
 		return
 	}
-	fmt.Println("init conf success")
-
 
 	err = conf.AppConf.InitLogs()
 
@@ -27,7 +25,6 @@ func initConf(){
 		fmt.Printf("init log failed:%v", err)
 		return
 	}
-	fmt.Println("init logs success")
 }
 
 func WebMain() {
@@ -50,7 +47,7 @@ func WebMain() {
 	只有高于锁设置的级别的以上的log才能打印，
 	比如级别设置为info, 那么debug的级别是不打印的
 	*/
-	app.Logger().SetLevel("info")
+	app.Logger().SetLevel("error")
 
 	/*
 		不管当前代码路径在什么地方， iris.HTML必须基于项目的根目录， 所以是./src/web/views/
@@ -63,15 +60,16 @@ func WebMain() {
 		[]string{"127.0.0.1:2379"}, 5 * time.Second)
 
 	etcdKeys := conf.AppConf.GetEtcdKeys()
+	fmt.Println("到etcd服务器，按指定的键遍历键值对")
 	for _, key := range etcdKeys {
 		resp := etcdService.Get(key)
 		for _, ev := range resp.Kvs {
-			// return result is not string
 			services.ConfChan <- string(ev.Value)
-			fmt.Printf("etcd key = %s , etcd value = %s", ev.Key, ev.Value)
+			fmt.Printf("etcdkey = %s \n etcdvalue = %s \n", ev.Key, ev.Value)
 		}
 	}
 
+	// 启动对etcd的监听服务，有新的键值对会被监听到
 	go etcdService.EtcdWatch(etcdKeys)
 
 	tailService := services.NewTailService()
@@ -84,8 +82,7 @@ func WebMain() {
 	etcdManagerApp.Register(etcdService)
 	etcdManagerApp.Handle(new(controllers.EtcdManangerController))
 
-	app.Logger().Debug("app.run")
-	app.Logger().Info("info111111111 ")
+	app.Logger().Debug("iris启动服务")
 	app.Run(
 		iris.Addr("localhost:9080"),
 		iris.WithoutServerError(iris.ErrServerClosed),

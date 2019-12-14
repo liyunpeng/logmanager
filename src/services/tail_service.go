@@ -2,8 +2,8 @@ package services
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"strings"
 	"sync"
 
 	"github.com/astaxie/beego/logs"
@@ -19,55 +19,42 @@ type tailService struct {
 
 }
 
+func NewTailService() *tailService{
+	return &tailService{}
+}
 
 func (t *tailService ) RunServer() {
-	tailMgr = NewTailMgr()
-	tailMgr.Process()
+	tailManager = NewTailManager()
+	tailManager.Process()
 	waitGroup.Wait()
 }
 
+var tailManager *TailManager
 
-func NewTailService() *tailService{
-
-	return &tailService{}
-}
-// TailObj is TailMgr's instance
-type TailObj struct {
-	tail     *tail.Tail
-	offset   int64
-	logConf  conf.LogConfig
-	secLimit *conf.SecondLimit
-	exitChan chan bool
+type TailManager struct {
+	tailWithConfMap map[string]*TailWithConf
+	lock            sync.Mutex
 }
 
-var tailMgr *TailMgr
-
-//TailMgr to manage tailObj
-type TailMgr struct {
-	tailObjMap map[string]*TailObj
-	lock       sync.Mutex
-}
-
-// NewTailMgr init TailMgr obj
-func NewTailMgr() *TailMgr {
-	return &TailMgr{
-		tailObjMap: make(map[string]*TailObj, 16),
+// NewTailManager init TailManager obj
+func NewTailManager() *TailManager {
+	return &TailManager{
+		tailWithConfMap: make(map[string]*TailWithConf, 16),
 	}
 }
 
-//AddLogFile to Add tail obj
-func (t *TailMgr) AddLogFile(logConfig conf.LogConfig) (err error) {
+func (t *TailManager) NewTailWithConf(logConfig conf.LogConfig) (*TailWithConf,  error) {
 	t.lock.Lock()
 	defer t.lock.Unlock()
-	fmt.Println("add log file:", logConfig)
-	_, ok := t.tailObjMap[logConfig.LogPath]
+
+	fmt.Println("在Tail服务里增加一个被监控的文件：", logConfig)
+	_, ok := t.tailWithConfMap[logConfig.LogPath]
 	if ok {
-		err = fmt.Errorf("duplicate filename:%s", logConfig.LogPath)
-		return
+		return nil, errors.New("map中已存在该键值")
 	}
 
 	tail, err := tail.TailFile(logConfig.LogPath, tail.Config{
-		ReOpen:    true,
+		ReOpen:   true,
 		Follow:    true,
 		Location:  &tail.SeekInfo{Offset: 0, Whence: 2}, // read to tail
 		MustExist: false,                                //file does not exist, it does not return an error
@@ -75,42 +62,49 @@ func (t *TailMgr) AddLogFile(logConfig conf.LogConfig) (err error) {
 	})
 	if err != nil {
 		fmt.Println("tail file err:", err)
-		return
+		return nil, err
 	}
 
-	tailObj := &TailObj{
+	tailWithConf := &TailWithConf{
 		tail:     tail,
 		offset:   0,
 		logConf:  logConfig,
 		secLimit: conf.NewSecondLimit(int32(logConfig.SendRate)),
 		exitChan: make(chan bool, 1),
 	}
-	t.tailObjMap[logConfig.LogPath] = tailObj
 
-	waitGroup.Add(1)
-	go tailObj.readLog()
-	return
+	return tailWithConf, err
 }
 
-func (t *TailMgr) reloadConfig(logConfArr []conf.LogConfig) (err error) {
+func (t *TailManager) reloadConfig(logConfArr []conf.LogConfig) (err error) {
+	fmt.Println("hdcloud tail管理者重新加载配置")
 	for _, logConfArrValue := range logConfArr {
-		tailObj, ok := t.tailObjMap[logConfArrValue.LogPath]
+		tailWithConf, ok := t.tailWithConfMap[logConfArrValue.LogPath]
 
 		if !ok {
-			err = t.AddLogFile(logConfArrValue)
+			fmt.Println("hdcloud tail监控的文件不存在，则为此文件新建一个tail对象")
+			tailWithConf, err = t.NewTailWithConf(logConfArrValue)
 			if err != nil {
 				logs.Error("add log file failed:%v", err)
 				continue
 			}
+
+			t.tailWithConfMap[logConfArrValue.LogPath] = tailWithConf
+
+			waitGroup.Add(1)
+
+			fmt.Println("新的监控文件对应一个新的tail对象， ")
+			go tailWithConf.readLog(logConfArrValue.LogPath)
+
 			continue
 		}
-		tailObj.logConf = logConfArrValue
-		tailObj.secLimit.Limit = int32(logConfArrValue.SendRate)
-		t.tailObjMap[logConfArrValue.LogPath] = tailObj
-		fmt.Println("tailObj:", tailObj)
+		tailWithConf.logConf = logConfArrValue
+		tailWithConf.secLimit.Limit = int32(logConfArrValue.SendRate)
+		t.tailWithConfMap[logConfArrValue.LogPath] = tailWithConf
+		fmt.Println("tailWithConf:", tailWithConf)
 	}
 
-	for key, tailObj := range t.tailObjMap {
+	for key, tailWithConf := range t.tailWithConfMap {
 		var found = false
 		for _, newValue := range logConfArr {
 			if key == newValue.LogPath {
@@ -120,24 +114,21 @@ func (t *TailMgr) reloadConfig(logConfArr []conf.LogConfig) (err error) {
 		}
 		if found == false {
 			logs.Warn("log path :%s is remove", key)
-			tailObj.exitChan <- true
-			delete(t.tailObjMap, key)
+			tailWithConf.exitChan <- true
+			delete(t.tailWithConfMap, key)
 		}
 	}
 	return
 }
 
-// Process hava two func get new log conf and reload conf
-func (t *TailMgr) Process() {
+func (t *TailManager) Process() {
 	for etcdConfValue := range ConfChan {
 		logs.Debug("log etcdConfValue: %v", etcdConfValue)
-		//fmt.Printf("log etcdConfValue: %v", etcdConfValue)
 
 		var logConfArr []conf.LogConfig
 
 		err := json.Unmarshal([]byte(etcdConfValue), &logConfArr)
-		fmt.Println("logConfArr: ", logConfArr)
-
+		fmt.Println("从etcd得到的配置字符串解析出的配置对象: ", logConfArr)
 
 		if err != nil {
 			logs.Error("unmarshal failed, err: %v etcdConfValue :%s", err, etcdConfValue)
@@ -150,38 +141,5 @@ func (t *TailMgr) Process() {
 			logs.Error("reload config from etcd failed: %v", err)
 			continue
 		}
-		//logs.Debug("reload config from etcd success")
-		fmt.Printf("reload config from etcd success")
 	}
 }
-
-func (t *TailObj) readLog() {
-
-	for line := range t.tail.Lines {
-		if line.Err != nil {
-			logs.Error("read line error:%v ", line.Err)
-			continue
-		}
-
-		lineStr := strings.TrimSpace(line.Text)
-		fmt.Println("readLog :", lineStr)
-
-		if len(lineStr) == 0 || lineStr[0] == '\n' {
-			continue
-		}
-
-		kafkaSender.addMessage(line.Text, t.logConf.Topic)
-		t.secLimit.Add(1)
-		t.secLimit.Wait()
-
-		select {
-		case <-t.exitChan:
-			logs.Warn("tail obj is exited: config:", t.logConf)
-			return
-		default:
-		}
-	}
-	waitGroup.Done()
-}
-
-

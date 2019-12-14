@@ -29,6 +29,6 @@ func getLocalIP() (ips []string, err error) {
 	//		}
 	//	}
 	//}
-	fmt.Println("111111111111111 ips :", ips)
+	fmt.Println("本地ip=", ips)
 	return
 }

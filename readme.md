@@ -53,3 +53,17 @@ logagent 是一个实时收集日志的并发送到kafka集群的客户端。
     "log_path": "应该监听的日志文件",   
     "topic": "kfk topic",
     "send_rate": "日志条数限制"
+
+### 测试
+http://localhost:9080/etcdmanager
+填充如下：
+ /logagent/192.168.0.142/logconfig
+[
+		{
+			"topic":"nginx_log",
+			"log_path":"D:\\log1",
+			"service":"test_service",
+			"send_rate":1000
+		},
+]
+数组里可以有多个{}抱起来的字符串

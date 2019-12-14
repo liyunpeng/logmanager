@@ -6,19 +6,19 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
-var kafkaSender = &KafkaSend{}
+var kafkaSender = &KafkaSender{}
 
 type KafkaService interface {
 	RunServer()
 }
 
 type kafkaService struct {
-	Sendors []*KafkaSend
+	Sendors []*KafkaSender
 }
 
 func NewKafkaService(kafkaAddr string, threadNum int) *kafkaService {
 	k := &kafkaService{
-		Sendors: make([]*KafkaSend, 5, 10),
+		Sendors: make([]*KafkaSender, 5, 10),
 	}
 	kafkaSender, _ = NewKafkaSend(kafkaAddr, threadNum)
 	k.Sendors[0] = kafkaSender
@@ -32,38 +32,38 @@ type Message struct {
 	topic string
 }
 
-type KafkaSend struct {
-	client   sarama.SyncProducer
-	lineChan chan *Message
+type KafkaSender struct {
+	producerClient sarama.SyncProducer
+	lineChan       chan *Message
 }
 
 // NewKafkaSend is
-func NewKafkaSend(kafkaAddr string, threadNum int) (kafka *KafkaSend, err error) {
-	kafka = &KafkaSend{
+func NewKafkaSend(kafkaAddr string, threadNum int) (kafkaSender *KafkaSender, err error) {
+	kafkaSender = &KafkaSender{
 		lineChan: make(chan *Message, 10000),
 	}
 
 	config := sarama.NewConfig()
-	config.Producer.RequiredAcks = sarama.WaitForAll          // wait kafka ack
+	config.Producer.RequiredAcks = sarama.WaitForAll          // wait kafkaSender ack
 	config.Producer.Partitioner = sarama.NewRandomPartitioner // random partition
 	config.Producer.Return.Successes = true
 
 	client, err := sarama.NewSyncProducer([]string{kafkaAddr}, config)
 	if err != nil {
-		logs.Error("init kafka client err: %v", err)
+		logs.Error("init kafkaSender producerClient err: %v", err)
 		return
 	}
-	kafka.client = client
+	kafkaSender.producerClient = client
 
 	for i := 0; i < threadNum; i++ {
-		fmt.Println("start to send kfk")
+		fmt.Println("启动执行Kafka发送消息的协程")
 		waitGroup.Add(1)
-		go kafka.sendMsgToKfk()
+		go kafkaSender.sendMsgToKfk()
 	}
 	return
 }
 
-func (k *KafkaSend) sendMsgToKfk() {
+func (k *KafkaSender) sendMsgToKfk() {
 	defer waitGroup.Done()
 
 	for v := range k.lineChan {
@@ -71,9 +71,10 @@ func (k *KafkaSend) sendMsgToKfk() {
 		msg.Topic = v.topic
 		msg.Value = sarama.StringEncoder(v.line)
 
-		_, _, err := k.client.SendMessage(msg)
+		_, _, err := k.producerClient.SendMessage(msg)
 
-		fmt.Println("kafka send : ", msg.Value)
+		fmt.Println("kafka生产者向kafka broker发送消息，消息字符串=",
+			msg.Value, ", 消息主题=", msg.Topic)
 
 		if err != nil {
 			logs.Error("send massage to kafka error: %v", err)
@@ -82,7 +83,7 @@ func (k *KafkaSend) sendMsgToKfk() {
 	}
 }
 
-func (k *KafkaSend) addMessage(line string, topic string) (err error) {
+func (k *KafkaSender) addMessage(line string, topic string) (err error) {
 	k.lineChan <- &Message{line: line, topic: topic}
 	return
 }

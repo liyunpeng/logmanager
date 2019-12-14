@@ -44,7 +44,6 @@ func (e *EtcdManangerController) GetKv() string {
 		fmt.Printf("etcd key = %s , etcd value = %s", ev.Key, ev.Value)
 	}
 
-	//fmt.Println("k:",k, "v:", v)
 
 	return  v.String()
 }
