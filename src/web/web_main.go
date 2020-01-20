@@ -47,7 +47,7 @@ func WebMain() {
 	只有高于锁设置的级别的以上的log才能打印，
 	比如级别设置为info, 那么debug的级别是不打印的
 	*/
-	app.Logger().SetLevel("error")
+	app.Logger().SetLevel("debug")
 
 	/*
 		不管当前代码路径在什么地方， iris.HTML必须基于项目的根目录， 所以是./src/web/views/
@@ -57,7 +57,8 @@ func WebMain() {
 	initConf()
 
 	etcdService := services.NewEtcdService(
-		[]string{"127.0.0.1:2379"}, 5 * time.Second)
+		[]string{"192.168.43.144:2379"}, 5 * time.Second)
+		//[]string{"127.0.0.1:2379"}, 5 * time.Second)
 
 	etcdKeys := conf.AppConf.GetEtcdKeys()
 	fmt.Println("到etcd服务器，按指定的键遍历键值对")
@@ -78,13 +79,29 @@ func WebMain() {
 	services.NewKafkaService(
 		conf.AppConf.KafkaAddr, conf.AppConf.ThreadNum)
 
+	/*
+		创建iris应用的
+		app.Party得到一个路由对象， party的参数就是一个路径，整个应有都是在这个路径下，
+		mvc.new 由这个路由对象， 创建一个mvc的app对象。
+		这个app就可以做很多事情，
+		注册服务啊，注册控制器
+
+	 */
 	etcdManagerApp := mvc.New(app.Party("/etcdmanager"))
 	etcdManagerApp.Register(etcdService)
 	etcdManagerApp.Handle(new(controllers.EtcdManangerController))
 
+	//终端不会打印出此log
 	app.Logger().Debug("iris启动服务")
+
+	fmt.Println("iris启动服务")
+	/*
+		因为只注册了etcdmanager， 访问网址是
+		http://localhost:9081/etcdmanager
+		如果是http://localhost:9081， 浏览器会显示not found
+	 */
 	app.Run(
-		iris.Addr("localhost:9080"),
+		iris.Addr("localhost:9081"),
 		iris.WithoutServerError(iris.ErrServerClosed),
 		iris.WithOptimizations,
 		iris.WithConfiguration(iris.Configuration{ //默认配置:
