@@ -9,9 +9,11 @@
 			"send_rate":1000
 		}
 ]
-点提交
-----------------
-服务端相应的出现如下log：
+
+输入框里写的内容实际是一组配置信息字符串，这个配置信息主要表示要监控的文件的路径全名log_path，从被监控文件读出的内容发送给kafka消息服务器的主题topic
+因为这个字符串要被服务端解析成一个配置对象，所以该字符串不能有多有多余的逗号，因为这里只有一项，大括号的后面不能有逗号
+
+输入完成后， 点提交， 服务端就会出现相应的log：
 etcd服务watch到新的键值对： etcd key = /logagent/192.168.0.142/logconfig , value = [
                 {
                         "topic":"nginx_log",
@@ -26,6 +28,17 @@ hdcloud tail监控的文件不存在，则为此文件新建一个tail对象
 在Tail服务里增加一个被监控的文件： {nginx_log D:\log1 test_service 1000}
 新的监控文件对应一个新的tail对象，
 
+以上是点提交后，服务端出现的log，借这个log，说一下etcd的主要用处。 
+提交的内容是一个键值对， 这个键值对要写到到etcd服务器。 这个键是否被etcd服务器watch, 要在程序里设置的：
+app.conf设置了要watch的key：
+etcd_watch_key = /logagent/%s/logconfig
+etcd服务器watch的key支持正则表达式, 这意味着可以watch到一组不同名的key
+
+config.go 把配置文件的内容解析到程序里的配置对象：
+AppConf.EtcdWatchKey = conf.String("etcd_watch_key")
+
+
+，这样程序在用配置信息，不用每次都去读配置文件，减少io次数
 ------------------------
 测试：
 $ echo messagebody >> /d/log1
