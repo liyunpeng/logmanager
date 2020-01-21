@@ -38,8 +38,6 @@ func (a *AppConfig )InitConfig(file string) (err error) {
 	AppConf.LogFile = conf.String("log")
 	AppConf.LogLevel = conf.String("level")
 	fmt.Println("从本地配置文件", file, "加载到的配置信息", AppConf)
-
-
 	return
 }
 
@@ -91,8 +89,3 @@ func (e *AppConfig) GetEtcdKeys() ([]string) {
 	fmt.Println("从etcd服务器获取到的以IP名为键的键值对: \n", etcdKeys)
 	return etcdKeys
 }
-
-
-
-
-

@@ -1,0 +1,34 @@
+浏览器输入：
+/logagent/192.168.0.142/logconfig
+输入框输入：
+[
+		{
+			"topic":"nginx_log",
+			"log_path":"D:\\log1",
+			"service":"test_service",
+			"send_rate":1000
+		}
+]
+点提交
+----------------
+服务端相应的出现如下log：
+etcd服务watch到新的键值对： etcd key = /logagent/192.168.0.142/logconfig , value = [
+                {
+                        "topic":"nginx_log",
+                        "log_path":"D:\\log1",
+                        "service":"test_service",
+                        "send_rate":1000
+                }
+]
+从etcd得到的配置字符串解析出的配置对象:  [{nginx_log D:\log1 test_service 1
+hdcloud tail管理者重新加载配置
+hdcloud tail监控的文件不存在，则为此文件新建一个tail对象
+在Tail服务里增加一个被监控的文件： {nginx_log D:\log1 test_service 1000}
+新的监控文件对应一个新的tail对象，
+
+------------------------
+测试：
+$ echo messagebody >> /d/log1
+
+服务端出现log:
+kafka生产者向kafka broker发送消息，消息字符串= messagebody , 消息主题= nginx_log

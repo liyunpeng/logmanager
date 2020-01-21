@@ -57,7 +57,7 @@ func WebMain() {
 	initConf()
 
 	etcdService := services.NewEtcdService(
-		[]string{"192.168.43.144:2379"}, 5 * time.Second)
+		[]string{"192.168.0.141:2379"}, 5 * time.Second)
 		//[]string{"127.0.0.1:2379"}, 5 * time.Second)
 
 	etcdKeys := conf.AppConf.GetEtcdKeys()

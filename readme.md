@@ -64,6 +64,6 @@ http://localhost:9080/etcdmanager
 			"log_path":"D:\\log1",
 			"service":"test_service",
 			"send_rate":1000
-		},
+		}
 ]
 数组里可以有多个{}抱起来的字符串
