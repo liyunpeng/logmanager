@@ -1,6 +1,6 @@
 package main
 
-import "src/web"
+import "logmanager/src/web"
 
 func main() {
 

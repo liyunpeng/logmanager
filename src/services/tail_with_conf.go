@@ -3,9 +3,9 @@ package services
 import (
 	"fmt"
 	"github.com/astaxie/beego/logs"
-	"strings"
 	"github.com/hpcloud/tail"
-	"src/conf"
+	"logmanager/src/conf"
+	"strings"
 )
 
 type TailWithConf struct {

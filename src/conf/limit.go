@@ -3,7 +3,6 @@ package conf
 import (
 	"sync/atomic"
 	"time"
-
 	"github.com/astaxie/beego/logs"
 )
 // SecondLimit to Limit num in one second

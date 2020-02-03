@@ -4,11 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"sync"
-
 	"github.com/astaxie/beego/logs"
 	"github.com/hpcloud/tail"
-	"src/conf"
+	"logmanager/src/conf"
+	"sync"
 )
 
 type TailService interface {

@@ -1,10 +1,10 @@
 package controllers
 
 import (
-	"src/services"
 	"fmt"
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/mvc"
+	"logmanager/src/services"
 	"strings"
 )
 

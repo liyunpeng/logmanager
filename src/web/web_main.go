@@ -3,9 +3,9 @@ package web
 import (
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/mvc"
-	"src/services"
-	"src/conf"
-	"src/web/controllers"
+	"logmanager/src/services"
+	"logmanager/src/conf"
+	"logmanager/src/web/controllers"
 	"fmt"
 	"time"
 )
@@ -50,9 +50,9 @@ func WebMain() {
 	app.Logger().SetLevel("debug")
 
 	/*
-		不管当前代码路径在什么地方， iris.HTML必须基于项目的根目录， 所以是./src/web/views/
+		不管当前代码路径在什么地方， iris.HTML必须基于项目的根目录， 所以是./logmanager/src/web/views/
 	 */
-	app.RegisterView(iris.HTML("./src/web/views/", ".html"))
+	app.RegisterView(iris.HTML("./logmanager/src/web/views/", ".html"))
 
 	initConf()
 
