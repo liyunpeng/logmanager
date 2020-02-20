@@ -21,7 +21,7 @@ Name: "conf_manager.html",
 这个view用的文件就是上面RegisterView注册的路径
 
 ----------
-创建iris mvc对象两种方式：
+iris mvc控制器对象的注册有两种方式：
 1. mvc.New 方式
 由app.Party得到一个路由对象， party的参数就是一个路径，整个应有都是在这个路径下，
 mvc.new 由这个路由对象， 创建一个mvc的app对象。

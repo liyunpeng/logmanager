@@ -25,7 +25,7 @@ etcd服务watch到新的键值对： etcd key = /logagent/192.168.0.142/logconfi
                         "send_rate":1000
                 }
 ]
-从etcd得到的配置字符串解析出的配置对象:  [{nginx_log D:\log1 test_service 1
+从etcd得到的配置字符串解析出的配置对象:  [{nginx_log D:\log1 test_service 1}]
 hdcloud tail管理者重新加载配置
 hdcloud tail监控的文件不存在，则为此文件新建一个tail对象
 在Tail服务里增加一个被监控的文件： {nginx_log D:\log1 test_service 1000}
